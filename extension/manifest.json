@@ -1,0 +1,65 @@
+{
+  "manifest_version": 3,
+  "name": "TxLens — Before you sign",
+  "version": "0.2.5",
+  "description": "Understand wallet requests before signing. Local checks, optional AI explanations. English and 简体中文.",
+  "minimum_chrome_version": "120",
+  "permissions": [
+    "storage",
+    "alarms",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "http://localhost/*",
+    "http://127.0.0.1/*"
+  ],
+  "optional_host_permissions": [
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "TxLens",
+    "default_icon": {
+      "16": "icon-16.png",
+      "32": "icon-32.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "inpage.js"
+      ],
+      "run_at": "document_start",
+      "world": "MAIN",
+      "all_frames": true
+    },
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "bridge.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "icons": {
+    "16": "icon-16.png",
+    "32": "icon-32.png",
+    "48": "icon-48.png",
+    "128": "icon-128.png"
+  },
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAgzg3C1T/WaYgoM3wXCe7tDRT7LI8LjKHV8nRLF+322GHPFdE+sZgcLHp5jVcrUIaP7KzIdyD2tOHMNCuJDJT3yj3Q6LGD371dn2zASvf6w1jzxxvkYGxM4ml/wxNc/O5oegRDwJALk/c8/4lYqoZETsrXE0awLTt0H4fJoJJNU1G0zrKHqyZf1BjQjv/JWTdHmQdkFa5/6eMvI3lNtvD/IY9TN4GEefholdk9C+K9wZuA6X8bg0ir9eZ+kWl7yDbBxyvYAJJFkfBExIk/JqzKuuFqvuA1wh4c6dwn3FLpgGbTrYi89uXIWbu9ZbNo4oBNii0dNpEwS5SvbmdiEObbwIDAQAB"
+}

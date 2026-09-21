@@ -1,0 +1,72 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>TxLens browser QA — test wallets only</title>
+<style>body{background:#101714;color:#eff5ef;font:15px system-ui;margin:24px}button,select,a{font:inherit;padding:10px;margin:5px;color:#eff5ef;background:#28382d;border:1px solid #73886c;border-radius:6px}iframe{border:1px solid #73886c;vertical-align:top;background:#101714}#popup{width:380px;height:800px}#reviews iframe{width:500px;height:800px}#frames{display:flex;gap:18px}#log{white-space:pre-wrap;line-height:1.8}h1{font-size:24px}</style>
+<h1>TxLens 浏览器验证 · 全部为测试钱包</h1><p>使用真实打包的拦截、消息桥、后台和界面；Chrome API 与钱包由测试桩提供。没有私钥、链上 RPC 或真实交易。</p>
+<div><label>网站选择的钱包 <select id="wallet"><option>OKX Wallet</option><option>Phantom</option><option>Rabby</option></select></label>
+<label>模拟浏览器语言 <select id="browser-language"><option value="zh-CN">中文</option><option value="en-US">English</option></select></label><button id="zero">USDC 零额度授权（截图复现）</button><button id="replay">回放已上链的 Uniswap 提取请求（测试钱包）</button><button id="send">发起 Base 授权测试</button><button id="close">关闭审阅窗口</button><button id="refresh">刷新插件状态</button><a href="/?locked=1">测试部分入口不可用</a></div>
+<pre id="log" aria-live="polite">等待脚本载入…</pre><div id="frames"><iframe id="popup" title="插件状态"></iframe><div id="reviews"></div></div>
+<script>
+const log = (line) => { document.getElementById('log').textContent += '\n' + line; };
+const listeners = {};
+const local = {settings:{locale:'zh',serviceUrl:location.origin,paused:{}}}, session = {};
+let testChain = "0x2105";
+const windows = new Map(); let nextWindow = 0; const walletCalls = new Map();
+const store = (data) => ({ get:async (key) => key ? {[key]:data[key]} : {...data}, set:async (value)=>Object.assign(data,value),remove:async(key)=>{delete data[key];} });
+const on = (key) => ({addListener: (fn) => {listeners[key]=fn;}});
+const dispatch = (message, sender) => new Promise(resolve=>listeners.background(message,sender,resolve));
+const sendBridge = (message) => new Promise(resolve=>{ const async= listeners.bridge(message,{},resolve); if(async!==true) resolve(); });
+const chromeFor = (kind, url) => ({
+  storage:{local:store(local),session:store(session)},
+  runtime:{id:'qa-extension',getURL:(path)=>location.origin+'/'+path,getManifest:()=>({version:'0.2.5 QA'}),
+    onMessage:on(kind),onInstalled:on('installed'),sendMessage:(message)=>dispatch(message,kind==='bridge'?{tab:{id:1},url:location.href,frameId:0,documentId:'qa-page'}:{id:'qa-extension',url})},
+  tabs:{query:async()=>[{id:1,url:location.href}],sendMessage:async(_id,message)=>sendBridge(message),onRemoved:on('tabRemoved'),onUpdated:on('tabUpdated')},
+  windows:{
+    create:async({url})=>{const id=++nextWindow; const frame=document.createElement('iframe');frame.title='TxLens 请求审阅';frame.src=url;windows.set(id,frame);document.getElementById('reviews').append(frame);log('TxLens 已创建审阅窗口');return {id};},
+    get:async(id)=>({id}),remove:async(id)=>{windows.get(id)?.remove();windows.delete(id);},onRemoved:on('windowRemoved')},
+  alarms:{create:async()=>{},clear:async()=>{},onAlarm:on('alarm')},i18n:{getUILanguage:()=> document.getElementById('browser-language').value},permissions:{request:async()=>true}
+});
+window.qa = {chromeFor}; window.chrome = chromeFor('bridge');
+const nativeWallets = new Map(); const selectedWallets = new Map();
+for(const name of ['OKX Wallet','Phantom','Rabby']){
+  const provider=Object.freeze({isOkxWallet:name==='OKX Wallet',request:async(args)=>{if(args.method==='eth_chainId')return testChain;walletCalls.set(name,(walletCalls.get(name)||0)+1);log('测试钱包收到请求：'+name);return 'test-wallet-result';}});
+  nativeWallets.set(name,provider);
+}
+Object.defineProperty(window,'ethereum',{configurable:true,writable:true,value:nativeWallets.get('Phantom')});
+Object.defineProperty(window,'okxwallet',{configurable:!location.search.includes('locked'),value:nativeWallets.get('OKX Wallet')});
+function announce(){for(const [name,provider] of nativeWallets)window.dispatchEvent(new CustomEvent('eip6963:announceProvider',{detail:Object.freeze({provider,info:Object.freeze({name,uuid:name,rdns:name})})}));}
+window.addEventListener('eip6963:requestProvider',announce);
+const load = (src) => new Promise(resolve=>{const script=document.createElement('script');script.src=src;script.onload=resolve;document.head.append(script);});
+(async()=>{
+ const bg=document.createElement('iframe');bg.hidden=true;bg.src='/background.html';document.body.append(bg);await new Promise(resolve=>bg.onload=resolve);
+ await load('/inpage.js');await load('/bridge.js');
+ window.addEventListener('eip6963:announceProvider',event=>selectedWallets.set(event.detail.info.name,event.detail.provider));announce();
+ document.getElementById('popup').src='/index.html'; document.getElementById('log').textContent='就绪：三个测试钱包。默认入口 Phantom；网站选择 OKX Wallet。';
+})();
+document.getElementById('browser-language').onchange=()=>{for(const frame of document.querySelectorAll('iframe'))frame.contentWindow.dispatchEvent(new Event('languagechange'));};
+document.getElementById('zero').onclick=async()=>{
+ testChain='0x2105';
+ const account='0x1f14c2f40400471fb4a3aef1390f6bbbf2ad8f99';
+ const params=[{from:account,to:'0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',data:'0x095ea7b3'+account.slice(2).padStart(64,'0')+'0'.repeat(64)}];
+ const name=document.getElementById('wallet').value;const before=walletCalls.get(name)||0;
+ log('截图复现：将自己钱包的 USDC 授权额度设为 0；仅测试钱包。');
+ try{await selectedWallets.get(name).request({method:'eth_sendTransaction',params});log('结果：继续，测试钱包收到 '+((walletCalls.get(name)||0)-before)+' 次请求');}
+ catch(error){log('结果：取消 code='+error.code+'，测试钱包收到 '+((walletCalls.get(name)||0)-before)+' 次请求');}
+};
+document.getElementById('refresh').onclick=()=>{document.getElementById('popup').src='/index.html?refresh='+Date.now();};
+document.getElementById('close').onclick=async()=>{for(const id of windows.keys())await listeners.windowRemoved(id);};
+document.getElementById('send').onclick=async()=>{
+ testChain='0x2105';
+ const name=document.getElementById('wallet').value;const before=walletCalls.get(name)||0;
+ const params=[{from:'0x2222222222222222222222222222222222222222',to:'0x3333333333333333333333333333333333333333',data:'0x095ea7b3'+'1111111111111111111111111111111111111111'.padStart(64,'0')+'f'.repeat(64)}];
+ log('开始 Base 授权：'+name);
+ try{await selectedWallets.get(name).request({method:'eth_sendTransaction',params});log('结果：继续，测试钱包收到 '+((walletCalls.get(name)||0)-before)+' 次请求');}
+ catch(error){log('结果：取消 code='+error.code+'，测试钱包收到 '+((walletCalls.get(name)||0)-before)+' 次请求');}
+ log('各测试钱包累计调用：'+JSON.stringify(Object.fromEntries(walletCalls)));
+};
+document.getElementById('replay').onclick=async()=>{
+ const fixture=await fetch('/withdrawal.json').then(r=>r.json());testChain=fixture.request.chainId;
+ const name=document.getElementById('wallet').value;const before=walletCalls.get(name)||0;
+ log('历史请求回放：'+fixture.source+'。截止时间保留原值，因而可能显示已过期。仅交给测试钱包。');
+ try{await selectedWallets.get(name).request({method:fixture.request.method,params:fixture.request.params});log('回放结果：继续，测试钱包收到 '+((walletCalls.get(name)||0)-before)+' 次请求');}
+ catch(error){log('回放结果：取消 code='+error.code+'，测试钱包收到 '+((walletCalls.get(name)||0)-before)+' 次请求');}
+};
+</script></html>
