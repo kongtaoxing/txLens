@@ -1,6 +1,6 @@
 # TxLens validation
 
-Current package: **v0.2.5**. The sections below are dated records; older provider and verification limits describe their respective versions. Real Orbio activation is recorded under September 17, and manual website language selection under September 18.
+Current package: **v0.2.7**. The sections below are dated records; older provider and verification limits describe their respective versions. Real Orbio activation is recorded under September 17, and manual website language selection under September 18.
 
 Earlier readiness check, September 21, 2026 (superseded by the Vercel migration below): 69 tests, type checking, lint, website build and extension build passed. The local API was online/configured; that status request did not test upstream AI. No paid model call, signature or transaction was made during that check. Native Chrome/OKX acceptance, public deployment and a deployment-specific AI smoke test remain outstanding.
 
@@ -167,3 +167,16 @@ Final live check: POST from the user's observed current extension origin returne
 - Served the optimized production build separately on loopback. Chinese and English pages returned 200; the downloaded ZIP matched the build, passed integrity checks and contained the expected build-time test origin and host permission. Extension-origin GET returned 200 and OPTIONS 204.
 - One real, read-only Orbio call through the Node production API explained wrapping 0.1 ETH into WETH: HTTP 200 in 19.8 seconds, English action/effect/check fields, `orbio=true`, and successful `lookup_contract`. No wallet connection, signature or broadcast occurred.
 - Browser verification of the production page confirmed language switching and demo cancellation; no console warnings/errors were observed. This does not claim native Chrome/OKX acceptance.
+
+
+## v0.2.6 — hosted extension backend — 2026-09-21
+
+- Default local packages now use https://tx-lens.vercel.app. Legacy localhost settings migrate on update or first open; custom HTTPS backends, new explicit development overrides and site pauses are retained.
+- Five new regression tests reproduced the old defaults before the fix. All 77 tests, type checking, lint and an isolated production build passed. Browser QA of the production bundles verified both fresh and legacy settings send AI requests to the public endpoint; test-wallet cancel forwarded zero requests and continue forwarded once.
+- Deployment of commit 188803a succeeded. The public ZIP was v0.2.6 with the stable extension key, production host permission and migration logic. A live Orbio call returned HTTP 200 in 14.5 seconds with Chinese explanation fields and matching extension CORS headers; no signing or broadcast occurred.
+
+## v0.2.7 — extension language selector — 2026-09-21
+
+- Added a native language selector at the top of both the popup and review window: Browser default / 简体中文 / English. Preferences use a separate extension storage key, persist across popup reopening, and synchronize through Chrome storage events. Website preferences remain independent. AI requests use the selected locale; changing locale clears previous-language explanations without automatically invoking AI.
+- Browser QA used the actual extension bundles with explicit Chrome/wallet doubles and mock AI responses. Verified manual English overriding a Chinese browser, persistence after reopening the popup, inheritance by a new review window, Chinese selection synchronizing to the other window, and Auto responding to browser language changes. Both English and Chinese request payloads and matching explanation displays were checked. Visually inspected the selector in the 380px popup; native control focus is visible.
+- All 77 existing automated tests, type checking, lint and an isolated production build passed. No real-wallet transaction or extra paid AI call was needed for this language change.

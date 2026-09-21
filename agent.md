@@ -21,4 +21,4 @@ Automatically review supported injected EVM wallet requests before forwarding th
 
 Keep AI credentials server-side. Development uses the user's configured compatible provider. Final Orbio integration switches the server configuration and must be validated with real Orbio credentials before claiming it is active.
 
-- 产品文案直接描述操作、资产/权限变化和需要确认的事项，避免“人话”等调侃、技术报告和通用风险套话。界面与 AI 回复默认跟随浏览器语言。主页允许用户手动选择简体中文或 English，记住明确选择，并提供“跟随浏览器”以恢复自动匹配；AI 回复与当前界面语言一致。插件的语言规则保持原有自动匹配，除非用户另有要求。
+- 产品文案直接描述操作、资产/权限变化和需要确认的事项，避免“人话”等调侃、技术报告和通用风险套话。界面与 AI 回复默认跟随浏览器语言。主页允许用户手动选择简体中文或 English，记住明确选择，并提供“跟随浏览器”以恢复自动匹配；AI 回复与当前界面语言一致。插件也在顶部提供“跟随浏览器 / 简体中文 / English”，偏好独立保存在插件中并同步到已打开的插件窗口，AI 回复跟随当前界面语言。

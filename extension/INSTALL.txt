@@ -1,4 +1,4 @@
-TxLens v0.2.6 — Free / 免费
+TxLens v0.2.7 — Free / 免费
 
 Chrome / Edge: open Extensions → Developer mode → Load unpacked → select this folder.
 Chrome / Edge：扩展程序管理 → 开发者模式 → 加载已解压的扩展程序 → 选择此文件夹。
@@ -32,5 +32,5 @@ localhost 网页是交互预览，只打开网页并不会安装插件。
 从 v0.2.3 或更早版本升级：v0.2.4 开始固定插件 ID。浏览器可能将其识别为新的安装，请确认 AI 服务地址和暂停设置；之后换目录解压不会再改变 ID。
 Upgrading from v0.2.3 or earlier: v0.2.4 pins the unpacked extension ID. The browser may treat the first upgrade as a new installation; check your AI service address and pause preferences. Later folder changes retain the ID.
 
-界面与 AI 回复跟随浏览器语言，当前支持中文和英语，其他语言使用英语。
-Interface and AI replies follow browser language. Chinese and English are supported; other languages use English.
+插件和审阅窗口顶部可选择“跟随浏览器 / 简体中文 / English”，选择自动保存并同步到已打开的插件窗口。AI 回复使用当前界面语言。“跟随浏览器”在中文浏览器下使用中文，其他语言使用英文。
+Use the language selector at the top of the popup or review window: Browser default / 简体中文 / English. Your choice is saved and synchronized across extension windows; AI replies use the same language. Browser default selects Chinese for Chinese browser locales and English otherwise.

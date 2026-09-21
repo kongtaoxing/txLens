@@ -8,6 +8,7 @@ import {
   Play,
   ExternalLink,
   TriangleAlert,
+  Languages,
 } from "lucide-react";
 import {
   Brand,
@@ -15,7 +16,7 @@ import {
   type Explanation,
 } from "../components/inspector/review";
 import { tr } from "../lib/inspector/model";
-import { localeFromLanguage, subscribeLocale } from "../lib/inspector/locale";
+import { localeFromLanguage, subscribeLocale, languagePreference, type LanguagePreference } from "../lib/inspector/locale";
 const extensionLocale = () => localeFromLanguage(chrome.i18n.getUILanguage());
 import {
   defaults,
@@ -28,7 +29,9 @@ import {
 import "../app/product.css";
 import { Coverage, type Connection } from "./coverage";
 function App() {
-  const locale = useSyncExternalStore(subscribeLocale, extensionLocale);
+  const browserLanguage = useSyncExternalStore(subscribeLocale, extensionLocale);
+  const [language, setLanguage] = useState<LanguagePreference>("auto");
+  const locale = language === "auto" ? browserLanguage : language;
   const [settings, setSettings] = useState<Settings>(defaults),
     [item, setItem] = useState<Pending>(),
     [ready, setReady] = useState(false),
@@ -45,7 +48,10 @@ function App() {
   const t = (zh: string, en: string) => tr(locale, zh, en);
   useEffect(() => {
     void (async () => {
-      const initial = await loadSettings();
+      const [initial, savedLanguage] = await Promise.all([
+        loadSettings(), chrome.storage.local.get("extensionLanguage"),
+      ]);
+      setLanguage(languagePreference(savedLanguage.extensionLanguage));
       setSettings(initial);
       setUrl(initial.serviceUrl);
       if (id) {
@@ -78,6 +84,20 @@ function App() {
       setReady(true);
     });
   }, [id]);
+  useEffect(() => {
+    const changed = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
+      if (area === "local" && changes.extensionLanguage) {
+        setLanguage(languagePreference(changes.extensionLanguage.newValue));
+      }
+    };
+    chrome.storage.onChanged.addListener(changed);
+    return () => chrome.storage.onChanged.removeListener(changed);
+  }, []);
+  async function changeLanguage(value: string) {
+    const preference = languagePreference(value);
+    setLanguage(preference);
+    await chrome.storage.local.set({ extensionLanguage: preference });
+  }
   useEffect(() => {
     document.documentElement.lang = locale === "zh" ? "zh-CN" : "en";
   }, [locale]);
@@ -168,6 +188,19 @@ function App() {
     >
       <header className="extension-header">
         <Brand />
+        <label className="extension-language">
+          <Languages size={17} aria-hidden="true" />
+          <select
+            aria-label="语言 / Language"
+            value={language}
+            disabled={!ready}
+            onChange={(event) => void changeLanguage(event.target.value)}
+          >
+            <option value="auto">{t("跟随浏览器", "Browser default")}</option>
+            <option value="zh" lang="zh-CN">简体中文</option>
+            <option value="en" lang="en">English</option>
+          </select>
+        </label>
       </header>
       {!ready ? (
         <p className="empty-state">{t("正在读取请求…", "Loading request…")}</p>

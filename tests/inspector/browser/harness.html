@@ -7,20 +7,25 @@
 <script>
 const log = (line) => { document.getElementById('log').textContent += '\n' + line; };
 const listeners = {};
+const storageListeners = new Set();
 const serviceCase = new URLSearchParams(location.search).get('service');
-const local = serviceCase === 'fresh' ? {} : {settings: serviceCase === 'legacy'
+const local = ['fresh','language'].includes(serviceCase) ? {} : {settings: serviceCase === 'legacy'
   ? {serviceUrl:'http://localhost:5173',paused:{'https://paused.example':-1}}
   : {serviceUrl:location.origin,serviceMode:'custom',paused:{}}};
 const session = {};
 let testChain = "0x2105";
 const windows = new Map(); let nextWindow = 0; const walletCalls = new Map();
-const store = (data) => ({ get:async (key) => key ? {[key]:data[key]} : {...data}, set:async (value)=>Object.assign(data,value),remove:async(key)=>{delete data[key];} });
+const store = (data) => ({ get:async (key) => key ? {[key]:data[key]} : {...data}, set:async (value)=>{
+  const changes=Object.fromEntries(Object.entries(value).map(([key,newValue])=>[key,{oldValue:data[key],newValue}]));
+  Object.assign(data,value);
+  for(const listener of storageListeners)listener(changes,data===local?'local':'session');
+},remove:async(key)=>{delete data[key];} });
 const on = (key) => ({addListener: (fn) => {listeners[key]=fn;}});
 const dispatch = (message, sender) => new Promise(resolve=>listeners.background(message,sender,resolve));
 const sendBridge = (message) => new Promise(resolve=>{ const async= listeners.bridge(message,{},resolve); if(async!==true) resolve(); });
 const chromeFor = (kind, url) => ({
-  storage:{local:store(local),session:store(session)},
-  runtime:{id:'qa-extension',getURL:(path)=>location.origin+'/'+path,getManifest:()=>({version:'0.2.6 QA'}),
+  storage:{local:store(local),session:store(session),onChanged:{addListener:fn=>storageListeners.add(fn),removeListener:fn=>storageListeners.delete(fn)}},
+  runtime:{id:'qa-extension',getURL:(path)=>location.origin+'/'+path,getManifest:()=>({version:'0.2.7 QA'}),
     onMessage:on(kind),onInstalled:on('installed'),sendMessage:(message)=>dispatch(message,kind==='bridge'?{tab:{id:1},url:location.href,frameId:0,documentId:'qa-page'}:{id:'qa-extension',url})},
   tabs:{query:async()=>[{id:1,url:location.href}],sendMessage:async(_id,message)=>sendBridge(message),onRemoved:on('tabRemoved'),onUpdated:on('tabUpdated')},
   windows:{
@@ -31,9 +36,13 @@ const chromeFor = (kind, url) => ({
 window.qa = {chromeFor, explain: async(url, options) => {
   const expected = 'https://tx-lens.vercel.app/api/explain';
   const body = JSON.parse(options.body);
-  const correct = url === expected && options.method === 'POST' && body.locale === 'zh' && body.request.method === 'eth_sendTransaction';
+  const expectedLocale = local.extensionLanguage === 'zh' || local.extensionLanguage === 'en' ? local.extensionLanguage : document.getElementById('browser-language').value.startsWith('zh') ? 'zh' : 'en';
+  const correct = url === expected && options.method === 'POST' && body.locale === expectedLocale && body.request.method === 'eth_sendTransaction';
   const pausesKept = serviceCase !== 'legacy' || local.settings.paused['https://paused.example'] === -1;
-  log((correct && pausesKept ? 'PASS' : 'FAIL') + ': ' + serviceCase + ' → ' + url + '；中文请求；原有暂停设置保留=' + pausesKept);
+  log((correct && pausesKept ? 'PASS' : 'FAIL') + ': ' + serviceCase + ' → ' + url + '；请求语言='+body.locale+'；原有暂停设置保留=' + pausesKept);
+  if(serviceCase === 'language')return Response.json({provider:'QA fixture',orbio:false,text:body.locale==='zh'?'中文测试说明':'English test explanation',details:body.locale==='zh'
+    ? {action:'这是中文测试说明。',effect:'此测试不发送交易。',check:'核对选择的语言。'}
+    : {action:'This is an English test explanation.',effect:'This test sends no transaction.',check:'Check the selected language.'}});
   return new Response(JSON.stringify({error:'service'}), {status:503,headers:{'Content-Type':'application/json'}});
 }}; window.chrome = chromeFor('bridge');
 const nativeWallets = new Map(); const selectedWallets = new Map();

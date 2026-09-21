@@ -14,6 +14,6 @@ export function subscribeLocale(callback: () => void) {
 
 export type LanguagePreference = "auto" | Locale;
 export const WEBSITE_LANGUAGE_COOKIE = "txlens-website-language";
-export function languagePreference(value: string | null | undefined): LanguagePreference {
+export function languagePreference(value: unknown): LanguagePreference {
   return value === "zh" || value === "en" ? value : "auto";
 }

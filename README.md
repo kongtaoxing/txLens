@@ -57,7 +57,7 @@ Opening `/api/explain` in a browser is a read-only status check. `online` / `aiC
 
 The website defaults to browser language and offers **Auto / 简体中文 / English**. An explicit choice is saved in a website-only cookie and also sets the demo's AI language; Auto restores browser matching.
 
-The extension follows the browser UI language automatically. Chinese locales use Simplified Chinese; other currently unsupported languages use English. Old extension language overrides are ignored.
+The extension has its own language selector at the top of both the popup and request review: **Browser default / 简体中文 / English**. Choices are saved in extension storage and synchronized across open extension windows; AI replies follow the selected interface language. Browser default uses Simplified Chinese for Chinese locales and English otherwise. Website and extension preferences are independent; old legacy locale settings are ignored.
 
 ## Coverage and limits
 

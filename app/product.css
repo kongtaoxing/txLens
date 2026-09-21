@@ -789,9 +789,36 @@ a.primary,
   justify-content: space-between;
   align-items: center;
   margin-bottom: 18px;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 .extension-header .brand {
   font-size: 22px;
+}
+.extension-language {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 10px;
+  color: var(--muted);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+}
+.extension-language select {
+  min-height: 42px;
+  max-width: 150px;
+  padding: 0 8px 0 0;
+  border: 0;
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.extension-language:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 .review-window {
   max-width: 650px;
