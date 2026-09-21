@@ -1,9 +1,8 @@
 import type { NextConfig } from "next";
-import { loadEnv } from "vite";
 import { createHash } from "node:crypto";
 import manifest from "./extension/manifest.json";
 
-const extensionIds = loadEnv("development", process.cwd(), "TXLENS_").TXLENS_EXTENSION_IDS || "";
+const extensionIds = process.env.TXLENS_EXTENSION_IDS || "";
 const stableExtensionId = createHash("sha256").update(Buffer.from(manifest.key, "base64"))
   .digest("hex").slice(0, 32).replace(/[0-9a-f]/g, (digit) => String.fromCharCode(97 + parseInt(digit, 16)));
 const nextConfig: NextConfig = {

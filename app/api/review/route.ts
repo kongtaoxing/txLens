@@ -1,4 +1,5 @@
-import { env } from "cloudflare:workers";
+export const runtime = "nodejs";
+export const maxDuration = 200;
 import { getConfig } from "@/lib/txlens/ai";
 import { review } from "@/lib/txlens/review";
 import { reviewSchema, type ReviewEvent } from "@/lib/txlens/types";
@@ -10,7 +11,7 @@ export async function POST(request: Request) {
     if (body.length > 64000) return Response.json({ error: "Transaction bundle is too large." }, { status: 413 });
     input = reviewSchema.parse(JSON.parse(body));
   } catch { return Response.json({ error: "Check the intent, amount fields, wallet addresses and bundle JSON. Only chain 4663 is supported." }, { status: 400 }); }
-  const values = env as Record<string, unknown>;
+  const values = process.env;
   const config = { ...getConfig(values), rpcUrl: String(values.ROBINHOOD_RPC_URL || "") };
   const encoder = new TextEncoder();
   const controller = new AbortController();

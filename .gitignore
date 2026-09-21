@@ -48,8 +48,6 @@ next-env.d.ts
 !.env.example
 *.tsbuildinfo
 
-# Vendored build helper is source; extension output is generated.
-/build/*
-!/build/sites-vite-plugin.ts
-!/build/sites-vite-plugin.LICENSE
+# Generated extension output.
+/build/
 /public/downloads/*.zip

@@ -6,8 +6,8 @@ Pin TxLens, then reload your dApp. 固定 TxLens，然后刷新网站。
 
 Local checks do not need an account, API key or backend.
 本地检查无需账户、API Key 或后端。
-AI explanations use http://localhost:5173 by default. Start the TxLens website service or set a deployed HTTPS service URL in the extension settings.
-AI 默认连接 http://localhost:5173。请运行 TxLens 网站服务，或在插件设置中填写已部署的 HTTPS 服务地址。
+Hosted builds connect to their production service. Local builds use http://localhost:5173. You can change the HTTPS backend URL in extension settings.
+网站构建的安装包连接正式服务；本地构建默认连接 http://localhost:5173。可在插件设置中修改 HTTPS 服务地址。
 Never put an AI API key in the extension. Do not enter a wallet seed phrase anywhere in TxLens.
 不要把 AI 密钥写入插件，不要向 TxLens 提供钱包助记词。
 

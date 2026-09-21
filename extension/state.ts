@@ -13,8 +13,9 @@ export type Pending = {
   created: number;
   request: WalletRequest;
 };
+declare const TXLENS_SERVICE_URL: string | undefined;
 export const defaults: Settings = {
-  serviceUrl: "http://localhost:5173",
+  serviceUrl: typeof TXLENS_SERVICE_URL === "string" ? TXLENS_SERVICE_URL : "http://localhost:5173",
   paused: {},
 };
 export const isPaused = (

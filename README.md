@@ -10,7 +10,7 @@ Review wallet requests before you confirm them. TxLens is a free Chrome / Edge e
 
 ## Run locally
 
-Requirements: Node.js 22.13+, npm, and desktop Chrome / Edge 120+. Packaging currently uses `/usr/bin/zip`, available on macOS and on Linux with the `zip` package installed.
+Requirements: Node.js 22.x, npm, and desktop Chrome / Edge 120+. Extension ZIPs are built with JavaScript; no system ZIP utility is required.
 
 From the cloned repository:
 
@@ -43,8 +43,9 @@ Set these in **`.env.local` on the server**, using `.env.example` as the templat
 | `AI_MODEL` | Tested model: `deepseek/deepseek-v4.1-flash` |
 | `AI_PROVIDER_LABEL` | `Orbio` |
 | `TXLENS_EXTENSION_IDS` | Optional comma-separated IDs for older unpacked installations |
+| `TXLENS_SERVICE_URL` | Optional public HTTPS backend origin for extension builds |
 
-Never put a key in extension files or `NEXT_PUBLIC_*` variables. The extension stores the **TxLens backend URL**, not an AI provider endpoint or key. It defaults to `http://localhost:5173`; a deployed HTTPS backend can be selected in extension settings, with browser permission for that host.
+Never put a key in extension files or `NEXT_PUBLIC_*` variables. The extension stores the **TxLens backend URL**, not an AI provider endpoint or key. Local builds default to `http://localhost:5173`. Vercel builds use the production domain; `TXLENS_SERVICE_URL` can explicitly select another HTTPS origin at build time. A different backend can also be selected in extension settings, with browser permission for that host. Existing installations keep their saved settings.
 
 On demand, `/api/explain` sends request evidence to Orbio. The model can call tools to retrieve verified ABI/source from Sourcify, inspect reported proxy implementations and decode nested bytes. Results explain the action, its effect and what to check; supporting sources are available in the review. Deterministic findings are kept separate from model interpretation.
 
@@ -82,7 +83,17 @@ npm run build:extension
 npm run build
 ```
 
-The site build uses Vinext / Cloudflare Workers. **Vercel deployment adaptation is not included yet**: the current API imports `cloudflare:workers`, and the build produces Worker output. Importing this repository as a standard Next.js Vercel project is not a verified deployment path.
+The site uses Next.js with Node.js API routes. `npm run build` first creates the extension ZIP, then builds the website and API. `npm start` serves the production build on port 5173.
+
+### Deploy on Vercel
+
+Import this repository as **Next.js**, with Node.js **22.x**. `vercel.json` sets installation to `npm ci` and building to `npm run build`; leave the output directory at its framework default.
+
+Add `AI_BASE_URL`, `AI_API_KEY`, `AI_MODEL` and `AI_PROVIDER_LABEL` to the project's server-side environment variables. The key stays in Vercel settings, never Git or a `NEXT_PUBLIC_*` variable. Redeploy after changing environment values. Without a key, local checks still work and the AI endpoint reports unconfigured.
+
+The downloadable extension defaults to `VERCEL_PROJECT_PRODUCTION_URL`, automatically supplied by Vercel. To select your custom domain explicitly, set `TXLENS_SERVICE_URL=https://your-domain` before building. The built manifest grants access to that origin. Keep automatic system environment variables enabled; local builds use localhost. Existing users with a saved backend can change it in extension settings.
+
+The lockfile overrides three unavailable transitive versions with published versions from the same minor series: `tinyglobby@0.2.17`, `@floating-ui/utils@0.2.12` and `@napi-rs/wasm-runtime@0.2.12`. Validate installs against the public registry without relying on a pre-populated cache when updating dependencies.
 
 For an isolated browser replay, run `node scripts/qa-extension.mjs` after building the extension, then open **http://127.0.0.1:5174**. It uses production extension bundles with explicit Chrome API and wallet doubles. It does not connect to a real wallet, sign or broadcast; the harness is excluded from the distributed ZIP.
 
@@ -94,9 +105,8 @@ For an isolated browser replay, run `node scripts/qa-extension.mjs` after buildi
 | `app/api/explain/` | Optional server-side AI endpoint |
 | `tests/inspector/` | Decoder, wallet-hook and request-pipeline regressions |
 | `lib/txlens/`, `tests/txlens/` | Retained deterministic tools and tests from the earlier Orbio prototype |
-| `build/sites-vite-plugin.*` | Vendored build helper and upstream license; these are source files |
 
-The legacy `/api/review` route belongs to the earlier prototype. Its optional `ROBINHOOD_RPC_URL` setting is not used by the extension's `/api/explain` flow. Database/auth examples retained from the scaffold are not part of the product flow.
+The legacy `/api/review` route belongs to the earlier prototype. Its optional `ROBINHOOD_RPC_URL` setting is not used by the extension's `/api/explain` flow.
 
 ## Troubleshooting interception
 

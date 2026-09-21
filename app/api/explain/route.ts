@@ -1,4 +1,5 @@
-import { env } from "cloudflare:workers";
+export const runtime = "nodejs";
+export const maxDuration = 120;
 import { z } from "zod";
 import { getConfig } from "@/lib/txlens/ai";
 import { requestMethods } from "@/lib/inspector/model";
@@ -31,13 +32,13 @@ function headers(req: Request) {
 }
 export function GET(req: Request) {
   if (!allowed(req)) return Response.json({ error: "origin" }, { status: 403 });
-  const config = getConfig(env as Record<string, unknown>);
+  const config = getConfig(process.env);
   return Response.json({
     service: "TxLens",
     status: "online",
     aiConfigured: Boolean(config.apiKey && config.model),
-    message: "本地服务在线。请在插件的审阅窗口点击 AI 解释；直接打开本页不会发起分析。",
-    messageEn: "The local service is online. Use the AI explanation button in the extension review window; opening this page does not run an analysis.",
+    message: "服务在线。请在插件的审阅窗口点击 AI 解释；直接打开本页不会发起分析。",
+    messageEn: "The service is online. Use the AI explanation button in the extension review window; opening this page does not run an analysis.",
     serviceUrl: new URL(req.url).origin,
     analysisMethod: "POST",
     aiConnection: "not_checked_by_this_status_request",
@@ -71,7 +72,7 @@ export async function POST(req: Request) {
       { status: 400, headers: headers(req) },
     );
   }
-  const config = getConfig(env as Record<string, unknown>);
+  const config = getConfig(process.env);
   if (!config.apiKey || !config.model)
     return Response.json(
       { error: "unconfigured" },

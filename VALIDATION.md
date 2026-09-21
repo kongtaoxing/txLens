@@ -2,7 +2,7 @@
 
 Current package: **v0.2.5**. The sections below are dated records; older provider and verification limits describe their respective versions. Real Orbio activation is recorded under September 17, and manual website language selection under September 18.
 
-Latest readiness check, September 21, 2026: 69 tests, type checking, lint, website build and extension build passed. The local API was online/configured; that status request did not test upstream AI. No paid model call, signature or transaction was made during that check. Native Chrome/OKX acceptance, public deployment and a deployment-specific AI smoke test remain outstanding.
+Earlier readiness check, September 21, 2026 (superseded by the Vercel migration below): 69 tests, type checking, lint, website build and extension build passed. The local API was online/configured; that status request did not test upstream AI. No paid model call, signature or transaction was made during that check. Native Chrome/OKX acceptance, public deployment and a deployment-specific AI smoke test remain outstanding.
 
 ## Completed
 
@@ -155,3 +155,15 @@ Final live check: POST from the user's observed current extension origin returne
 - In that clean export, all 69 tests, TypeScript checking, ESLint, extension packaging and production website build passed. No paid inference, real wallet connection, signature or transaction was used.
 - Scanned the publishable files for locally configured secrets and common credential patterns; no matches were found. The checked-in environment example has a blank API key.
 - README now documents first-time installation, package distribution, current language behavior and the pending Vercel adaptation. No remote repository, public deployment or submission was created.
+
+
+## Vercel / Next.js migration — 2026-09-21
+
+- Reproduced the reported public-registry 404 for `tinyglobby@0.2.46`. Empty-cache installation and a full tarball audit also found unavailable `@floating-ui/utils@0.2.42` and `@napi-rs/wasm-runtime@0.2.42`. The earlier cached-install check did not establish public-registry availability. Overrides select published versions in the same minor series: 0.2.17, 0.2.12 and 0.2.12 respectively.
+- Rebuilt the dependency lock from the public registry and completed `npm ci` with a new empty cache: 524 packages installed. The preceding tarball audit returned HTTP 200 for all 615 checked links, including non-macOS native packages. The final install also repaired nested AJV entries produced by npm's lock-only resolution.
+- Replaced Vinext / Cloudflare runtime with standard Next.js and Node API routes; pinned Node to 22.x and added explicit Vercel install/build configuration. Removed unused Cloudflare database/auth scaffolding and build helpers. Orbio settings are read from server-side `process.env`.
+- Production builds generate the extension ZIP in JavaScript, without a system zip executable. Hosted bundles use the Vercel production origin or `TXLENS_SERVICE_URL`, and the output manifest grants access to that origin. Local builds retain localhost; existing saved settings are preserved.
+- All 72 tests, TypeScript checking, ESLint and `next build` passed in an isolated source copy. Three new tests cover runtime environment configuration, secret-free status, missing-key behavior, extension CORS and a mocked structured AI response.
+- Served the optimized production build separately on loopback. Chinese and English pages returned 200; the downloaded ZIP matched the build, passed integrity checks and contained the expected build-time test origin and host permission. Extension-origin GET returned 200 and OPTIONS 204.
+- One real, read-only Orbio call through the Node production API explained wrapping 0.1 ETH into WETH: HTTP 200 in 19.8 seconds, English action/effect/check fields, `orbio=true`, and successful `lookup_contract`. No wallet connection, signature or broadcast occurred.
+- Browser verification of the production page confirmed language switching and demo cancellation; no console warnings/errors were observed. This does not claim native Chrome/OKX acceptance.
