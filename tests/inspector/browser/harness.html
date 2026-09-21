@@ -7,7 +7,11 @@
 <script>
 const log = (line) => { document.getElementById('log').textContent += '\n' + line; };
 const listeners = {};
-const local = {settings:{locale:'zh',serviceUrl:location.origin,paused:{}}}, session = {};
+const serviceCase = new URLSearchParams(location.search).get('service');
+const local = serviceCase === 'fresh' ? {} : {settings: serviceCase === 'legacy'
+  ? {serviceUrl:'http://localhost:5173',paused:{'https://paused.example':-1}}
+  : {serviceUrl:location.origin,serviceMode:'custom',paused:{}}};
+const session = {};
 let testChain = "0x2105";
 const windows = new Map(); let nextWindow = 0; const walletCalls = new Map();
 const store = (data) => ({ get:async (key) => key ? {[key]:data[key]} : {...data}, set:async (value)=>Object.assign(data,value),remove:async(key)=>{delete data[key];} });
@@ -16,7 +20,7 @@ const dispatch = (message, sender) => new Promise(resolve=>listeners.background(
 const sendBridge = (message) => new Promise(resolve=>{ const async= listeners.bridge(message,{},resolve); if(async!==true) resolve(); });
 const chromeFor = (kind, url) => ({
   storage:{local:store(local),session:store(session)},
-  runtime:{id:'qa-extension',getURL:(path)=>location.origin+'/'+path,getManifest:()=>({version:'0.2.5 QA'}),
+  runtime:{id:'qa-extension',getURL:(path)=>location.origin+'/'+path,getManifest:()=>({version:'0.2.6 QA'}),
     onMessage:on(kind),onInstalled:on('installed'),sendMessage:(message)=>dispatch(message,kind==='bridge'?{tab:{id:1},url:location.href,frameId:0,documentId:'qa-page'}:{id:'qa-extension',url})},
   tabs:{query:async()=>[{id:1,url:location.href}],sendMessage:async(_id,message)=>sendBridge(message),onRemoved:on('tabRemoved'),onUpdated:on('tabUpdated')},
   windows:{
@@ -24,7 +28,14 @@ const chromeFor = (kind, url) => ({
     get:async(id)=>({id}),remove:async(id)=>{windows.get(id)?.remove();windows.delete(id);},onRemoved:on('windowRemoved')},
   alarms:{create:async()=>{},clear:async()=>{},onAlarm:on('alarm')},i18n:{getUILanguage:()=> document.getElementById('browser-language').value},permissions:{request:async()=>true}
 });
-window.qa = {chromeFor}; window.chrome = chromeFor('bridge');
+window.qa = {chromeFor, explain: async(url, options) => {
+  const expected = 'https://tx-lens.vercel.app/api/explain';
+  const body = JSON.parse(options.body);
+  const correct = url === expected && options.method === 'POST' && body.locale === 'zh' && body.request.method === 'eth_sendTransaction';
+  const pausesKept = serviceCase !== 'legacy' || local.settings.paused['https://paused.example'] === -1;
+  log((correct && pausesKept ? 'PASS' : 'FAIL') + ': ' + serviceCase + ' → ' + url + '；中文请求；原有暂停设置保留=' + pausesKept);
+  return new Response(JSON.stringify({error:'service'}), {status:503,headers:{'Content-Type':'application/json'}});
+}}; window.chrome = chromeFor('bridge');
 const nativeWallets = new Map(); const selectedWallets = new Map();
 for(const name of ['OKX Wallet','Phantom','Rabby']){
   const provider=Object.freeze({isOkxWallet:name==='OKX Wallet',request:async(args)=>{if(args.method==='eth_chainId')return testChain;walletCalls.set(name,(walletCalls.get(name)||0)+1);log('测试钱包收到请求：'+name);return 'test-wallet-result';}});
@@ -39,7 +50,7 @@ const load = (src) => new Promise(resolve=>{const script=document.createElement(
  const bg=document.createElement('iframe');bg.hidden=true;bg.src='/background.html';document.body.append(bg);await new Promise(resolve=>bg.onload=resolve);
  await load('/inpage.js');await load('/bridge.js');
  window.addEventListener('eip6963:announceProvider',event=>selectedWallets.set(event.detail.info.name,event.detail.provider));announce();
- document.getElementById('popup').src='/index.html'; document.getElementById('log').textContent='就绪：三个测试钱包。默认入口 Phantom；网站选择 OKX Wallet。';
+ document.getElementById('popup').src='/index.html'; document.getElementById('log').textContent='就绪：三个测试钱包。默认入口 Phantom；网站选择 OKX Wallet。'+(serviceCase ? ' 服务地址测试：'+serviceCase+'；AI 响应由测试桩返回，不发送网络请求。' : '');
 })();
 document.getElementById('browser-language').onchange=()=>{for(const frame of document.querySelectorAll('iframe'))frame.contentWindow.dispatchEvent(new Event('languagechange'));};
 document.getElementById('zero').onclick=async()=>{

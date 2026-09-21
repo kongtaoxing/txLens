@@ -19,6 +19,7 @@ import { localeFromLanguage, subscribeLocale } from "../lib/inspector/locale";
 const extensionLocale = () => localeFromLanguage(chrome.i18n.getUILanguage());
 import {
   defaults,
+  loadSettings,
   isPaused,
   validServiceUrl,
   type Settings,
@@ -44,10 +45,7 @@ function App() {
   const t = (zh: string, en: string) => tr(locale, zh, en);
   useEffect(() => {
     void (async () => {
-      const stored = (await chrome.storage.local.get("settings")).settings as
-        | Partial<Settings>
-        | undefined;
-      const initial = { ...defaults, ...stored };
+      const initial = await loadSettings();
       setSettings(initial);
       setUrl(initial.serviceUrl);
       if (id) {
@@ -161,7 +159,7 @@ function App() {
       setUrlError(true);
       return;
     }
-    await save({ ...settings, serviceUrl: clean });
+    await save({ ...settings, serviceUrl: clean, serviceMode: clean === defaults.serviceUrl ? "default" : "custom" });
     setSaved(true);
   }
   return (
@@ -309,8 +307,8 @@ function App() {
               />
               <p>
                 {t(
-                  "当前安装包使用本机服务。更换为已部署的 TxLens 服务地址即可远程使用。这里不填写 API Key。",
-                  "This package uses the local service. Enter a deployed TxLens service URL for remote use. Do not enter an API key here.",
+                  "默认连接 TxLens 线上服务，无需配置。仅在使用自建服务时修改地址；这里不填写 API Key。",
+                  "TxLens connects to the online service automatically. Change this only for a self-hosted backend. Do not enter an API key here.",
                 )}
               </p>
               <button className="secondary" onClick={service}>

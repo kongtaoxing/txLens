@@ -168,3 +168,41 @@ test("approving with pause persists 15 minute pause; cancelling does not", async
   );
   assert.equal(other.local.settings, undefined);
 });
+
+test("fresh installs use the public AI backend", async () => {
+  const h = setup();
+  await h.events.install();
+  assert.equal((h.local.settings as { serviceUrl: string }).serviceUrl, "https://tx-lens.vercel.app");
+});
+
+test("upgrades replace the legacy localhost backend and keep site pauses", async () => {
+  const h = setup();
+  const paused = { "https://paused.example": -1 };
+  h.local.settings = { serviceUrl: "http://localhost:5173", paused };
+  await h.events.install();
+  assert.equal((h.local.settings as { serviceUrl: string }).serviceUrl, "https://tx-lens.vercel.app");
+  assert.deepEqual((h.local.settings as { paused: object }).paused, paused);
+});
+
+test("an existing install uses the public backend even without an update event", async () => {
+  const h = setup();
+  h.local.settings = { serviceUrl: "http://127.0.0.1:5173", paused: {} };
+  const id = await queue(h);
+  const result = await h.dispatch({ type: "get", id }, h.ui);
+  assert.equal((result.settings as { serviceUrl: string }).serviceUrl, "https://tx-lens.vercel.app");
+  assert.equal((h.local.settings as { serviceUrl: string }).serviceUrl, "https://tx-lens.vercel.app");
+});
+
+test("upgrades retain a custom HTTPS backend", async () => {
+  const h = setup();
+  h.local.settings = { serviceUrl: "https://my-txlens.example", paused: {} };
+  await h.events.install();
+  assert.equal((h.local.settings as { serviceUrl: string }).serviceUrl, "https://my-txlens.example");
+});
+
+test("explicit development overrides are not migrated", async () => {
+  const h = setup();
+  h.local.settings = { serviceUrl: "http://localhost:5173", serviceMode: "custom", paused: {} };
+  await h.events.install();
+  assert.equal((h.local.settings as { serviceUrl: string }).serviceUrl, "http://localhost:5173");
+});

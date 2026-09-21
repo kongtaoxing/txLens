@@ -5,7 +5,7 @@ import { zipSync } from "fflate";
 const out = "build/txlens-extension";
 const serviceUrl = new URL(process.env.TXLENS_SERVICE_URL ||
   (process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "http://localhost:5173"));
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "https://tx-lens.vercel.app"));
 if ((serviceUrl.protocol !== "https:" && !(serviceUrl.protocol === "http:" &&
   ["localhost", "127.0.0.1"].includes(serviceUrl.hostname))) ||
   serviceUrl.username || serviceUrl.password || serviceUrl.search || serviceUrl.hash ||

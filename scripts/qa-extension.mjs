@@ -24,7 +24,7 @@ const server = createServer(async (req, res) => {
     if (path === "/background.html") { res.setHeader("Content-Type", "text/html"); res.end('<script>window.chrome=parent.qa.chromeFor("background",location.href)</script><script src="/background.js"></script>'); return; }
     if (path === "/index.html") {
       let html = await readFile("build/txlens-extension/index.html", "utf8");
-      html = html.replace("<head>", '<head><script>window.chrome=parent.qa.chromeFor("ui",location.href)</script>');
+      html = html.replace("<head>", '<head><script>window.chrome=parent.qa.chromeFor("ui",location.href);if(new URLSearchParams(parent.location.search).has("service"))window.fetch=parent.qa.explain;</script>');
       res.setHeader("Content-Type", "text/html"); res.end(html); return;
     }
     if (!/^\/(inpage|bridge|background|ui)\.(js|css)$/.test(path)) { res.writeHead(404); res.end(); return; }

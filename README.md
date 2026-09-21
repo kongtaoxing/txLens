@@ -45,7 +45,7 @@ Set these in **`.env.local` on the server**, using `.env.example` as the templat
 | `TXLENS_EXTENSION_IDS` | Optional comma-separated IDs for older unpacked installations |
 | `TXLENS_SERVICE_URL` | Optional public HTTPS backend origin for extension builds |
 
-Never put a key in extension files or `NEXT_PUBLIC_*` variables. The extension stores the **TxLens backend URL**, not an AI provider endpoint or key. Local builds default to `http://localhost:5173`. Vercel builds use the production domain; `TXLENS_SERVICE_URL` can explicitly select another HTTPS origin at build time. A different backend can also be selected in extension settings, with browser permission for that host. Existing installations keep their saved settings.
+Never put a key in extension files or `NEXT_PUBLIC_*` variables. The extension stores the **TxLens backend URL**, not an AI provider endpoint or key. All builds default to the online service at `https://tx-lens.vercel.app`; Vercel builds use their production domain. `TXLENS_SERVICE_URL` can override the origin at build time. For local development, explicitly set `TXLENS_SERVICE_URL=http://localhost:5173` when building. A different backend can also be selected in extension settings, with browser permission for that host. Version 0.2.6 migrates old localhost defaults to the packaged service on update or first open, preserving site pauses and custom HTTPS backends. Newly saved custom settings, including local development URLs, remain unchanged.
 
 On demand, `/api/explain` sends request evidence to Orbio. The model can call tools to retrieve verified ABI/source from Sourcify, inspect reported proxy implementations and decode nested bytes. Results explain the action, its effect and what to check; supporting sources are available in the review. Deterministic findings are kept separate from model interpretation.
 
@@ -91,7 +91,7 @@ Import this repository as **Next.js**, with Node.js **22.x**. `vercel.json` sets
 
 Add `AI_BASE_URL`, `AI_API_KEY`, `AI_MODEL` and `AI_PROVIDER_LABEL` to the project's server-side environment variables. The key stays in Vercel settings, never Git or a `NEXT_PUBLIC_*` variable. Redeploy after changing environment values. Without a key, local checks still work and the AI endpoint reports unconfigured.
 
-The downloadable extension defaults to `VERCEL_PROJECT_PRODUCTION_URL`, automatically supplied by Vercel. To select your custom domain explicitly, set `TXLENS_SERVICE_URL=https://your-domain` before building. The built manifest grants access to that origin. Keep automatic system environment variables enabled; local builds use localhost. Existing users with a saved backend can change it in extension settings.
+The downloadable extension defaults to `VERCEL_PROJECT_PRODUCTION_URL`, automatically supplied by Vercel. To select your custom domain explicitly, set `TXLENS_SERVICE_URL=https://your-domain` before building. The built manifest grants access to that origin. Keep automatic system environment variables enabled. Local builds also default to the online service unless `TXLENS_SERVICE_URL` is explicitly set. Existing users must reload the updated unpacked extension; old localhost defaults migrate automatically.
 
 The lockfile overrides three unavailable transitive versions with published versions from the same minor series: `tinyglobby@0.2.17`, `@floating-ui/utils@0.2.12` and `@napi-rs/wasm-runtime@0.2.12`. Validate installs against the public registry without relying on a pre-populated cache when updating dependencies.
 

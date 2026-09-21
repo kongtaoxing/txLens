@@ -1,6 +1,7 @@
 import type { WalletRequest } from "../lib/inspector/model";
 export type Settings = {
   serviceUrl: string;
+  serviceMode: "default" | "custom";
   paused: Record<string, number>;
 };
 export type Pending = {
@@ -15,9 +16,35 @@ export type Pending = {
 };
 declare const TXLENS_SERVICE_URL: string | undefined;
 export const defaults: Settings = {
-  serviceUrl: typeof TXLENS_SERVICE_URL === "string" ? TXLENS_SERVICE_URL : "http://localhost:5173",
+  serviceUrl: typeof TXLENS_SERVICE_URL === "string" ? TXLENS_SERVICE_URL : "https://tx-lens.vercel.app",
+  serviceMode: "default",
   paused: {},
 };
+// Older releases saved the local development URL as if it were a user choice.
+// New explicit overrides are marked so developers can still use a local server.
+export function resolveSettings(stored?: Partial<Settings>): Settings {
+  const legacyCustom = stored?.serviceUrl &&
+    validServiceUrl(stored.serviceUrl) &&
+    !["localhost", "127.0.0.1"].includes(new URL(stored.serviceUrl).hostname);
+  const custom = stored?.serviceMode === "custom" ||
+    (!stored?.serviceMode && legacyCustom);
+  return {
+    ...defaults,
+    ...stored,
+    serviceUrl: custom && stored?.serviceUrl ? stored.serviceUrl : defaults.serviceUrl,
+    serviceMode: custom ? "custom" : "default",
+  };
+}
+
+export async function loadSettings(): Promise<Settings> {
+  const stored = (await chrome.storage.local.get("settings")).settings as Partial<Settings> | undefined;
+  const current = resolveSettings(stored);
+  if (stored && (stored.serviceUrl !== current.serviceUrl || stored.serviceMode !== current.serviceMode)) {
+    await chrome.storage.local.set({ settings: current });
+  }
+  return current;
+}
+
 export const isPaused = (
   settings: Settings,
   origin: string,

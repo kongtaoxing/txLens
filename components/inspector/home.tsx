@@ -204,7 +204,7 @@ export default function Home({ initialLocale, initialPreference = "auto" }: {
         </section>
 
         <section className="lp-install-section lp-container" id="install" aria-labelledby="install-title">
-          <div className="lp-install-intro" data-reveal><span className="lp-eyebrow">03 / {t("从下一笔开始", "FOR YOUR NEXT TRANSACTION")}</span><h2 id="install-title">{t("下一笔交易，", "Your next transaction.")}<br /><span>{t("带上 TxLens。", "A little more clarity.")}</span></h2><div className="lp-install-download"><a className="lp-button lp-button-accent" href="/downloads/txlens-extension.zip" download><ArrowDownToLine size={19} />{t("下载免费插件", "Download TxLens free")}<ArrowUpRight size={19} /></a><span>v0.2.5 · Chrome / Edge {t("桌面版", "desktop")}</span></div></div>
+          <div className="lp-install-intro" data-reveal><span className="lp-eyebrow">03 / {t("从下一笔开始", "FOR YOUR NEXT TRANSACTION")}</span><h2 id="install-title">{t("下一笔交易，", "Your next transaction.")}<br /><span>{t("带上 TxLens。", "A little more clarity.")}</span></h2><div className="lp-install-download"><a className="lp-button lp-button-accent" href="/downloads/txlens-extension.zip" download><ArrowDownToLine size={19} />{t("下载免费插件", "Download TxLens free")}<ArrowUpRight size={19} /></a><span>v0.2.6 · Chrome / Edge {t("桌面版", "desktop")}</span></div></div>
           <div className="lp-install-guide" data-reveal><div className="lp-guide-label"><span>{t("安装指南", "INSTALLATION GUIDE")}</span><span>{t("当前通过安装包加载", "LOAD FROM A ZIP FILE")}</span></div><ol>
             {[
               [t("下载并解压", "Download & unzip"), t("下载上方安装包，把解压后的 txlens-extension 文件夹留在电脑上。", "Download the package above. Keep the extracted txlens-extension folder on your computer.")],

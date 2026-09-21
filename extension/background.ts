@@ -1,14 +1,7 @@
 /// <reference types="chrome" />
 import { requestMethods, type WalletRequest } from "../lib/inspector/model";
-import { defaults, isPaused, type Settings, type Pending } from "./state";
+import { loadSettings as settings, isPaused, type Pending } from "./state";
 const pendingKey = (id: string) => `pending:${id}`;
-const settings = async () =>
-  ({
-    ...defaults,
-    ...((await chrome.storage.local.get("settings")).settings as
-      | Partial<Settings>
-      | undefined),
-  }) as Settings;
 const get = async (id: string) =>
   (await chrome.storage.session.get(pendingKey(id)))[pendingKey(id)] as
     | Pending
@@ -158,11 +151,5 @@ chrome.alarms.onAlarm.addListener((alarm) => {
   void finish(alarm.name, false);
 });
 chrome.runtime.onInstalled.addListener(async () => {
-  const old = await chrome.storage.local.get("settings");
-  if (!old.settings)
-    await chrome.storage.local.set({
-      settings: {
-        ...defaults,
-      },
-    });
+  await chrome.storage.local.set({ settings: await settings() });
 });

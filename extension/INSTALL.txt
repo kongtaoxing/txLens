@@ -1,4 +1,4 @@
-TxLens v0.2.5 — Free / 免费
+TxLens v0.2.6 — Free / 免费
 
 Chrome / Edge: open Extensions → Developer mode → Load unpacked → select this folder.
 Chrome / Edge：扩展程序管理 → 开发者模式 → 加载已解压的扩展程序 → 选择此文件夹。
@@ -6,8 +6,8 @@ Pin TxLens, then reload your dApp. 固定 TxLens，然后刷新网站。
 
 Local checks do not need an account, API key or backend.
 本地检查无需账户、API Key 或后端。
-Hosted builds connect to their production service. Local builds use http://localhost:5173. You can change the HTTPS backend URL in extension settings.
-网站构建的安装包连接正式服务；本地构建默认连接 http://localhost:5173。可在插件设置中修改 HTTPS 服务地址。
+The extension connects to the online TxLens service automatically. You can select a self-hosted backend in extension settings.
+插件自动连接 TxLens 线上服务，无需启动本地服务器。仅在使用自建服务时修改插件设置中的地址。
 Never put an AI API key in the extension. Do not enter a wallet seed phrase anywhere in TxLens.
 不要把 AI 密钥写入插件，不要向 TxLens 提供钱包助记词。
 
@@ -20,6 +20,8 @@ Privacy: settings and temporary requests stay in browser storage. Review request
 隐私：设置和待处理请求保存在浏览器中；请求在完成、取消或超时后删除。点击 AI 解释才会把可读请求信息发给你配置的 TxLens 后端及其模型服务。不收私钥，不自动签名，不收交易费用，不建立审阅历史数据库。
 
 Updating / 更新旧版：
+Version 0.2.6 migrates legacy localhost settings to the online service and keeps site pauses. Reload the extension to apply the update.
+v0.2.6 会自动将旧版本保存的 localhost 地址迁移到线上服务，并保留网站暂停设置；重新加载插件后生效。
 If TxLens is already installed, replace the files in its loaded folder and click Reload in the browser's Extensions page. Then reload the actual dApp tab, not just localhost.
 若已安装，请更新原来加载的文件夹，在扩展管理页点击 TxLens 的“重新加载”，然后刷新实际发起授权的网站，不是只刷新 localhost。
 Open TxLens on the dApp to check each wallet entry. Partial or missing attachment can miss requests. Entry attachment is not proof of a completed transaction test. The check does not request accounts, signatures or transactions.

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "TxLens — Before you sign",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "Understand wallet requests before signing. Local checks, optional AI explanations. English and 简体中文.",
   "minimum_chrome_version": "120",
   "permissions": [
