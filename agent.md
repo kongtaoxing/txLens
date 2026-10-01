@@ -3,7 +3,7 @@
 - 不要过度设计。先完成可演示的核心流程，不为假设中的需求添加抽象、账号、数据库或服务。
 - 不要过度思考。做合理决定后推进，遇到真实阻碍再调研。
 - 不要做过多防御性设计。只在外部输入、密钥、金额和链上事实边界保留必要校验；错误直接解释，不叠加静默兜底。
-- Orbio 必须参与最终产品的核心分析：模型负责基于检查证据解释用户请求，不能只放赞助商标。
+- 当前申请 Arc Microgrants：真实支持 Arc 主网请求、USDC 金额与公开链上查询。不得用更换品牌文案代替集成，不得宣称 Circle 已赞助、已获奖或已部署不存在的合约。
 - 开发阶段允许用户指定的兼容 AI 服务，通过环境变量切换；调用记录必须反映实际提供方，不能伪造 Orbio 已接通。
 - 金额、地址、授权与 calldata 由确定性工具校验，模型不得改写检查结论。
 - 未识别的合约优先通过 AI 工具查询已验证 ABI 和源码、解码调用，不以逐个添加协议特判作为唯一扩展方式；查询失败和模型推断必须明确区分于已确认事实。
@@ -19,6 +19,6 @@ The product is a free Manifest V3 browser extension, with a companion installati
 
 Automatically review supported injected EVM wallet requests before forwarding them unchanged to the wallet. Local deterministic checks are immediate; AI explanation is optional and must not block the user's decision. Support exact-origin site pause and resumption. Never claim complete protection, simulation or verified safety from decoded calldata alone. No accounts, database, transaction commission, private-key custody or automatic signing.
 
-Keep AI credentials server-side. Development uses the user's configured compatible provider. Final Orbio integration switches the server configuration and must be validated with real Orbio credentials before claiming it is active.
+Keep AI credentials server-side. Development uses the user's configured compatible provider. The AI provider is configurable; preserve truthful runtime attribution. An Arc grant application does not require changing the AI gateway. Arc native USDC uses 18 decimals and the ERC-20 interface uses 6; they represent the same balance.
 
 - 产品文案直接描述操作、资产/权限变化和需要确认的事项，避免“人话”等调侃、技术报告和通用风险套话。界面与 AI 回复默认跟随浏览器语言。主页允许用户手动选择简体中文或 English，记住明确选择，并提供“跟随浏览器”以恢复自动匹配；AI 回复与当前界面语言一致。插件也在顶部提供“跟随浏览器 / 简体中文 / English”，偏好独立保存在插件中并同步到已打开的插件窗口，AI 回复跟随当前界面语言。

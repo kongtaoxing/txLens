@@ -6,7 +6,8 @@ import {
   LockKeyhole, MousePointer2, Pause, Play, ScanLine, Sparkles, Wallet, X,
 } from "lucide-react";
 import { ReviewPanel, type Explanation } from "@/components/inspector/review";
-import { examples } from "@/lib/inspector/examples";
+import { ArcActivity } from "./arc-activity";
+import { arcExamples } from "@/lib/inspector/examples";
 import { tr, type Locale } from "@/lib/inspector/model";
 import {
   browserLocale, subscribeLocale, languagePreference, WEBSITE_LANGUAGE_COOKIE,
@@ -103,14 +104,14 @@ export default function Home({ initialLocale, initialPreference = "auto" }: {
   async function explain(): Promise<Explanation> {
     const res = await fetch("/api/explain", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ locale, request: examples[selected] }),
+      body: JSON.stringify({ locale, request: arcExamples[selected] }),
     });
     return res.json();
   }
   const scenarios = [
     { icon: InfinityIcon, name: t("无限授权", "Unlimited approval"), description: t("这次授权，允许对方使用多少资产？", "How much access does this approval give?") },
     { icon: ArrowUpRight, name: t("代币转账", "Token transfer"), description: t("把多少资产，发送到哪个地址？", "How much are you sending, and to whom?") },
-    { icon: ScanLine, name: t("比例扣费", "Percentage payment"), description: t("请求中是否包含额外的扣费指令？", "Does this request include a payment instruction?") },
+    { icon: ScanLine, name: t("原生 USDC", "Native USDC"), description: t("直接发送的 USDC 金额是多少？", "How much native USDC does this request send?") },
   ];
   return (
     <div className="landing" data-locale={locale} ref={page} id="top">
@@ -118,7 +119,7 @@ export default function Home({ initialLocale, initialPreference = "auto" }: {
       <header className="lp-header">
         <nav className="lp-nav lp-container" aria-label={t("主导航", "Main navigation")}>
           <a className="lp-home-link" href="#top" aria-label={t("TxLens 首页", "TxLens home")}><Brand /></a>
-          <div className="lp-nav-links"><a href="#how">{t("如何使用", "How it works")}</a><a href="#preview">{t("体验演示", "Try it out")}</a></div>
+          <div className="lp-nav-links"><a href="#how">{t("如何使用", "How it works")}</a><a href="#arc">{t("Arc 主网", "Arc mainnet")}</a><a href="#preview">{t("体验演示", "Try it out")}</a></div>
           <div className="lp-nav-actions">
             <label className="lp-language">
               <Globe2 size={15} aria-hidden="true" />
@@ -140,9 +141,9 @@ export default function Home({ initialLocale, initialPreference = "auto" }: {
       <main id="main">
         <section className="lp-hero lp-container" aria-labelledby="hero-title">
           <div className="lp-hero-copy">
-            <div className="lp-kicker"><span className="lp-signal" />{t("每一笔，都值得看清楚", "KNOW WHAT YOU’RE SIGNING")}</div>
+            <div className="lp-kicker"><span className="lp-signal" />{t("Arc USDC · 钱包确认前的审阅助手", "ARC USDC · CLARITY BEFORE YOU CONFIRM")}</div>
             <h1 id="hero-title">{t("签名之前，", "Before you sign,")}<br /><span>{t("先看清楚。", "see the whole story.")}</span></h1>
-            <p className="lp-hero-description">{t("转给谁、转多少、授权多大。TxLens 在钱包确认前，帮你看清每次操作。", "Who gets your funds. How much. What access you grant. See what a request means before confirming in your wallet.")}</p>
+            <p className="lp-hero-description">{t("在 Arc 与其他 EVM 网络上，核对转给谁、转多少、授权多大。TxLens 在钱包确认前，帮你看清操作。", "Review recipients, amounts and spending permissions on Arc and other EVM networks, before confirming in your wallet.")}</p>
             <div className="lp-hero-actions"><a className="lp-button lp-button-accent" href="#install"><ArrowDownToLine size={18} />{t("免费获取 TxLens", "Get TxLens free")}<ArrowUpRight size={18} /></a><a className="lp-demo-link" href="#preview">{t("亲自试一下", "Explore the demo")}<ArrowRight size={18} /></a></div>
             <div className="lp-trust"><span><Check size={14} />{t("不收交易抽成", "No commission")}</span><span><LockKeyhole size={13} />{t("无需私钥", "No private keys")}</span></div>
           </div>
@@ -152,7 +153,7 @@ export default function Home({ initialLocale, initialPreference = "auto" }: {
             </button>
             <span className="lp-static-label">{t("已跟随系统关闭动画", "Reduced motion enabled")}</span>
           </div>
-          <div className="lp-hero-bottom"><span>{t("浏览器插件 · Chrome / Edge", "BROWSER EXTENSION · CHROME / EDGE")}</span><a href="#how" aria-label={t("了解使用流程", "Explore how it works")}><ArrowDown size={17} /></a><span className="lp-orbio-credit"><Sparkles size={13} />{t("AI 操作说明由 Orbio 提供", "AI EXPLANATIONS VIA ORBIO")}</span></div>
+          <div className="lp-hero-bottom"><span>{t("浏览器插件 · Chrome / Edge", "BROWSER EXTENSION · CHROME / EDGE")}</span><a href="#how" aria-label={t("了解使用流程", "Explore how it works")}><ArrowDown size={17} /></a><span className="lp-network-credit"><Sparkles size={13} />{t("支持 Arc · AI 说明按需使用", "ARC SUPPORT · OPTIONAL AI EXPLANATIONS")}</span></div>
         </section>
 
         <section className="lp-how lp-container" id="how" aria-labelledby="how-title">
@@ -187,12 +188,12 @@ export default function Home({ initialLocale, initialPreference = "auto" }: {
                   demoTabs.current?.querySelectorAll<HTMLButtonElement>("button")[next]?.focus();
                 }}><span className="lp-scenario-icon"><Icon size={21} /></span><span><strong>{name}</strong><small>{description}</small></span><ArrowUpRight className="lp-scenario-arrow" size={19} /></button>)}
               </div>
-              <div className="lp-demo-aside"><Sparkles size={18} /><p>{t("想了解更多？点击演示中的“分析这次操作”，由 Orbio 提供进一步说明。", "Want more context? Select “Explain this request” in the demo for an explanation powered by Orbio.")}</p></div>
+              <div className="lp-demo-aside"><Sparkles size={18} /><p>{t("想了解更多？点击演示中的“分析这次操作”，查看 AI 说明与合约资料。", "Want more context? Select “Explain this request” for optional AI analysis and contract sources.")}</p></div>
             </div>
             <div className="lp-demo-frame" data-reveal>
               <div className="lp-demo-chrome"><span className="lp-window-dots"><i /><i /><i /></span><span>TxLens / {t("交互演示", "INTERACTIVE DEMO")}</span><span className="lp-demo-badge">{t("示例数据", "SAMPLE DATA")}</span></div>
               <div className="lp-demo-panel" id="demo-panel" role="tabpanel" aria-labelledby={`scenario-${selected}`} tabIndex={0}>
-                {decision === null ? <ReviewPanel key={`${selected}:${locale}`} request={examples[selected]} locale={locale} preview onExplain={explain} onDecide={(approved) => setDecision(approved)} /> : <div className="lp-demo-result" role="status">
+                {decision === null ? <ReviewPanel key={`${selected}:${locale}`} request={arcExamples[selected]} locale={locale} preview onExplain={explain} onDecide={(approved) => setDecision(approved)} /> : <div className="lp-demo-result" role="status">
                   <span className="lp-result-icon">{decision ? <CheckCircle2 size={38} /> : <X size={38} />}</span>
                   <h3>{decision ? t("下一步：钱包确认", "Next: your wallet") : t("请求已取消", "Request cancelled")}</h3>
                   <p>{decision ? t("真实使用时，这一步会打开钱包的最终确认，你仍然可以拒绝。", "In the extension, this opens your wallet’s final confirmation. You can still reject it there.") : t("真实使用时，请求会在这里结束，不会提交给钱包。", "In the extension, the request ends here without being sent to your wallet.")}</p>
@@ -203,19 +204,21 @@ export default function Home({ initialLocale, initialPreference = "auto" }: {
           </div>
         </section>
 
+        <ArcActivity locale={locale} />
+
         <section className="lp-install-section lp-container" id="install" aria-labelledby="install-title">
-          <div className="lp-install-intro" data-reveal><span className="lp-eyebrow">03 / {t("从下一笔开始", "FOR YOUR NEXT TRANSACTION")}</span><h2 id="install-title">{t("下一笔交易，", "Your next transaction.")}<br /><span>{t("带上 TxLens。", "A little more clarity.")}</span></h2><div className="lp-install-download"><a className="lp-button lp-button-accent" href="/downloads/txlens-extension.zip" download><ArrowDownToLine size={19} />{t("下载免费插件", "Download TxLens free")}<ArrowUpRight size={19} /></a><span>v0.2.7 · Chrome / Edge {t("桌面版", "desktop")}</span></div></div>
+          <div className="lp-install-intro" data-reveal><span className="lp-eyebrow">03 / {t("从下一笔开始", "FOR YOUR NEXT TRANSACTION")}</span><h2 id="install-title">{t("下一笔交易，", "Your next transaction.")}<br /><span>{t("带上 TxLens。", "A little more clarity.")}</span></h2><div className="lp-install-download"><a className="lp-button lp-button-accent" href="/downloads/txlens-extension.zip" download><ArrowDownToLine size={19} />{t("下载免费插件", "Download TxLens free")}<ArrowUpRight size={19} /></a><span>v0.3.0 · Chrome / Edge {t("桌面版", "desktop")}</span></div></div>
           <div className="lp-install-guide" data-reveal><div className="lp-guide-label"><span>{t("安装指南", "INSTALLATION GUIDE")}</span><span>{t("当前通过安装包加载", "LOAD FROM A ZIP FILE")}</span></div><ol>
             {[
               [t("下载并解压", "Download & unzip"), t("下载上方安装包，把解压后的 txlens-extension 文件夹留在电脑上。", "Download the package above. Keep the extracted txlens-extension folder on your computer.")],
               [t("加载到浏览器", "Add to your browser"), t("打开 Chrome / Edge 的扩展程序管理页，启用“开发者模式”，点击“加载已解压的扩展程序”，选择该文件夹。", "Open Extensions in Chrome or Edge. Enable Developer mode, choose “Load unpacked”, then select the folder.")],
               [t("固定插件，刷新网站", "Pin it. Reload your dApp."), t("安装到你发起交易的浏览器，刷新交易网站。打开 TxLens，确认钱包入口已接入；如果已暂停，请先恢复审阅。", "Use the browser where you make transactions, then reload your dApp. Open TxLens to check wallet attachment and resume any paused reviews.")],
             ].map(([title, description], i) => <li key={title}><span className="lp-install-number">0{i + 1}</span><h3>{title}</h3><p>{description}</p></li>)}
-          </ol><p className="lp-service-note"><Sparkles size={15} />{t("基础审阅可离线使用。AI 说明需要运行本机服务，或连接已部署的 TxLens 服务。", "Local review works offline. AI explanations need the local service or a deployed TxLens service.")}</p></div>
+          </ol><p className="lp-service-note"><Sparkles size={15} />{t("基础审阅可离线使用。安装包已连接 TxLens 线上 AI 服务，无需填写密钥。", "Local review works offline. The download connects to the TxLens AI service; no API key setup is needed.")}</p></div>
           <details className="lp-scope"><summary>{t("目前支持哪些请求？", "Which requests are supported?")}<span>+</span></summary><p>{t("目前支持部分 EVM 钱包请求、常见转账和授权、Permit / Permit2 可读字段，以及已识别路由中的部分扣费指令。未接入或仅部分接入的钱包入口可能漏过请求。暂不支持 Solana 或硬件钱包独立应用，也无法覆盖所有复杂合约。TxLens 不模拟执行；未识别的内容会明确提示。", "Currently supports selected EVM wallet requests, common transfers and approvals, readable Permit / Permit2 fields, and selected payment instructions in recognized routers. Missing or partial wallet attachment can miss requests. Solana, standalone hardware-wallet apps and all complex contracts are not covered. TxLens does not simulate execution; unrecognized details are clearly marked.")}</p></details>
         </section>
       </main>
-      <footer className="lp-footer lp-container"><a href="#top" aria-label={t("返回顶部", "Back to top")}><Brand /></a><p>{t("看清操作，再确认。", "Clarity before you confirm.")}</p><div><span><Globe2 size={14} />{preference === "auto" ? t("语言跟随浏览器", "Language follows your browser") : t("语言：简体中文", "Language: English")}</span><span>Built for Orbio<ArrowUpRight size={13} /></span></div></footer>
+      <footer className="lp-footer lp-container"><a href="#top" aria-label={t("返回顶部", "Back to top")}><Brand /></a><p>{t("看清操作，再确认。", "Clarity before you confirm.")}</p><div><span><Globe2 size={14} />{preference === "auto" ? t("语言跟随浏览器", "Language follows your browser") : t("语言：简体中文", "Language: English")}</span><a href="https://github.com/kongtaoxing/txLens" target="_blank" rel="noreferrer">{t("开源代码", "Open source")}<ArrowUpRight size={13} /></a></div></footer>
     </div>
   );
 }

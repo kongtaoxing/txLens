@@ -11,8 +11,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: zh ? "TxLens — 看清操作，再确认" : "TxLens — Clarity before you confirm",
     description: zh
-      ? "在钱包确认前，查看收款地址、资产数量和授权范围。免费浏览器插件，支持 Orbio AI 操作说明。"
-      : "See recipients, amounts and permissions before confirming in your wallet. A free browser extension with optional AI explanations via Orbio.",
+      ? "在钱包确认前，查看收款地址、资产数量和授权范围。免费浏览器插件，支持 Arc USDC 与 EVM 请求审阅，可按需使用 AI 说明。"
+      : "See recipients, amounts and permissions before confirming in your wallet. A free browser extension for Arc USDC and EVM request reviews, with optional AI explanations.",
     icons: { icon: "/favicon.svg" },
   };
 }

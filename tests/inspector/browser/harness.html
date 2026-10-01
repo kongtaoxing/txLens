@@ -3,6 +3,7 @@
 <h1>TxLens 浏览器验证 · 全部为测试钱包</h1><p>使用真实打包的拦截、消息桥、后台和界面；Chrome API 与钱包由测试桩提供。没有私钥、链上 RPC 或真实交易。</p>
 <div><label>网站选择的钱包 <select id="wallet"><option>OKX Wallet</option><option>Phantom</option><option>Rabby</option></select></label>
 <label>模拟浏览器语言 <select id="browser-language"><option value="zh-CN">中文</option><option value="en-US">English</option></select></label><button id="zero">USDC 零额度授权（截图复现）</button><button id="replay">回放已上链的 Uniswap 提取请求（测试钱包）</button><button id="send">发起 Base 授权测试</button><button id="close">关闭审阅窗口</button><button id="refresh">刷新插件状态</button><a href="/?locked=1">测试部分入口不可用</a></div>
+<div><button id="arc-native">Arc 原生 USDC 转账（测试钱包）</button><button id="arc-approve">Arc USDC 授权（测试钱包）</button></div>
 <pre id="log" aria-live="polite">等待脚本载入…</pre><div id="frames"><iframe id="popup" title="插件状态"></iframe><div id="reviews"></div></div>
 <script>
 const log = (line) => { document.getElementById('log').textContent += '\n' + line; };
@@ -25,7 +26,7 @@ const dispatch = (message, sender) => new Promise(resolve=>listeners.background(
 const sendBridge = (message) => new Promise(resolve=>{ const async= listeners.bridge(message,{},resolve); if(async!==true) resolve(); });
 const chromeFor = (kind, url) => ({
   storage:{local:store(local),session:store(session),onChanged:{addListener:fn=>storageListeners.add(fn),removeListener:fn=>storageListeners.delete(fn)}},
-  runtime:{id:'qa-extension',getURL:(path)=>location.origin+'/'+path,getManifest:()=>({version:'0.2.7 QA'}),
+  runtime:{id:'qa-extension',getURL:(path)=>location.origin+'/'+path,getManifest:()=>({version:'0.3.0 QA'}),
     onMessage:on(kind),onInstalled:on('installed'),sendMessage:(message)=>dispatch(message,kind==='bridge'?{tab:{id:1},url:location.href,frameId:0,documentId:'qa-page'}:{id:'qa-extension',url})},
   tabs:{query:async()=>[{id:1,url:location.href}],sendMessage:async(_id,message)=>sendBridge(message),onRemoved:on('tabRemoved'),onUpdated:on('tabUpdated')},
   windows:{
@@ -72,6 +73,20 @@ document.getElementById('zero').onclick=async()=>{
  catch(error){log('结果：取消 code='+error.code+'，测试钱包收到 '+((walletCalls.get(name)||0)-before)+' 次请求');}
 };
 document.getElementById('refresh').onclick=()=>{document.getElementById('popup').src='/index.html?refresh='+Date.now();};
+for (const [id, approval] of [['arc-native', false], ['arc-approve', true]]) {
+ document.getElementById(id).onclick=async()=>{
+  testChain='0x13b2';
+  const name=document.getElementById('wallet').value;const before=walletCalls.get(name)||0;
+  const recipient='0x1111111111111111111111111111111111111111';
+  const params=[{from:'0x2222222222222222222222222222222222222222',
+   to:approval?'0x3600000000000000000000000000000000000000':recipient,
+   value:approval?'0x0':'0x15af1d78b58c40000',
+   data:approval?'0x095ea7b3'+recipient.slice(2).padStart(64,'0')+(5000000).toString(16).padStart(64,'0'):'0x'}];
+  log('Arc 测试：'+(approval?'5 USDC 使用授权':'25 USDC 原生转账')+'；不连接真实钱包。');
+  try{await selectedWallets.get(name).request({method:'eth_sendTransaction',params});log('结果：继续，测试钱包收到 '+((walletCalls.get(name)||0)-before)+' 次请求');}
+  catch(error){log('结果：取消 code='+error.code+'，测试钱包收到 '+((walletCalls.get(name)||0)-before)+' 次请求');}
+ };
+}
 document.getElementById('close').onclick=async()=>{for(const id of windows.keys())await listeners.windowRemoved(id);};
 document.getElementById('send').onclick=async()=>{
  testChain='0x2105';

@@ -176,7 +176,7 @@ export function ReviewPanel({
               </li>)}</ul>
             </details> : null}
             <small>
-              {answer.orbio ? "Orbio" : t("开发测试模型", "Development model")}{" "}
+              {answer.provider || (answer.orbio ? "Orbio" : "AI")}{" "}
               ·{" "}
               {t(
                 "AI 分析供参考，确认前请核对钱包信息",

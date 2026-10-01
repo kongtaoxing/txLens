@@ -1,5 +1,7 @@
 import type { WalletRequest } from "./model";
 const explorers: Record<string, string> = {
+  "5042": "https://explorer.arc.io",
+  "5042002": "https://explorer.testnet.arc.io",
   "1": "https://etherscan.io",
   "8453": "https://basescan.org",
   "42161": "https://arbiscan.io",

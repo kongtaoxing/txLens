@@ -1,12 +1,22 @@
 # TxLens
 
-Review wallet requests before you confirm them. TxLens is a free Chrome / Edge extension that shows recipients, amounts and permissions, with optional AI explanations powered by Orbio.
+Review wallet requests before you confirm them. TxLens is a free Chrome / Edge extension that shows recipients, amounts and permissions, with optional AI explanations. Arc mainnet USDC transfers and approvals are supported alongside other EVM networks.
 
 - Local checks appear immediately. AI never blocks Cancel or Continue.
 - The AI can investigate verified contract ABI and source, including proxy implementations and nested calls.
 - English and Simplified Chinese cover the interface, findings and AI explanations.
 - Pause one website for 15 minutes, skip it indefinitely, or resume reviews.
 - No account, transaction commission, private-key custody or automatic signing.
+
+## Arc mainnet
+
+Open [the live Arc reader](https://tx-lens.vercel.app/#arc) and choose **Read a recent USDC transaction**, or paste an Arc transaction hash. The service reads the official Arc mainnet RPC and shows decoded inputs, receipt success/failure, block and actual network fee. No wallet, signature or transaction is needed. The interactive preview above it is separately labeled as sample data.
+
+The extension recognizes Arc mainnet (chain ID **5042**) and Arc testnet (5042002). Native USDC values and gas use **18 decimals**; the USDC ERC-20 interface at `0x3600000000000000000000000000000000000000` uses **6 decimals**. These are two interfaces to the same balance. Arc addresses link to the correct mainnet/testnet explorer.
+
+TxLens is offchain wallet tooling, not a deployed smart contract. Its mainnet component is the live Arc RPC reader and Arc-aware request review. The reader uses `https://rpc.mainnet.arc.io` by default; an optional server-only `ARC_RPC_URL` may select another Arc mainnet endpoint. A chain-ID check rejects a testnet or unrelated endpoint. Failed lookups never fall back to sample data. Reading a mined transaction does not reveal the originating website or establish every resulting balance change.
+
+Sources: [Arc network configuration](https://docs.arc.io/arc/references/connect-to-arc), [USDC contract reference](https://docs.arc.io/arc/references/contract-addresses). Application materials and review steps: [Arc Microgrants submission](docs/ARC_MICROGRANTS.md).
 
 ## Run locally
 
@@ -32,14 +42,14 @@ Open **http://localhost:5173** for the product page, interactive preview and ext
 
 `npm run build:extension` also creates `public/downloads/txlens-extension.zip`. Unzip it before loading. Generated packages are excluded from Git; build them from source or attach the ZIP to a GitHub Release. There is no Chrome Web Store listing yet. Opening the website alone does not install the extension.
 
-## Orbio configuration
+## AI configuration
 
-Set these in **`.env.local` on the server**, using `.env.example` as the template:
+The gateway is OpenAI-compatible and can be changed independently of the supported chains. The current deployment uses Orbio; this is a service dependency, not a Circle endorsement. Set these in **`.env.local` on the server**, using `.env.example` as the template:
 
 | Variable | Purpose |
 | --- | --- |
 | `AI_BASE_URL` | Orbio gateway, `https://api.orbio.so/api/v1` |
-| `AI_API_KEY` | Your Orbio gateway key; never commit it |
+| `AI_API_KEY` | Your provider key; never commit it |
 | `AI_MODEL` | Tested model: `deepseek/deepseek-v4.1-flash` |
 | `AI_PROVIDER_LABEL` | `Orbio` |
 | `TXLENS_EXTENSION_IDS` | Optional comma-separated IDs for older unpacked installations |
@@ -47,7 +57,7 @@ Set these in **`.env.local` on the server**, using `.env.example` as the templat
 
 Never put a key in extension files or `NEXT_PUBLIC_*` variables. The extension stores the **TxLens backend URL**, not an AI provider endpoint or key. All builds default to the online service at `https://tx-lens.vercel.app`; Vercel builds use their production domain. `TXLENS_SERVICE_URL` can override the origin at build time. For local development, explicitly set `TXLENS_SERVICE_URL=http://localhost:5173` when building. A different backend can also be selected in extension settings, with browser permission for that host. Version 0.2.6 migrates old localhost defaults to the packaged service on update or first open, preserving site pauses and custom HTTPS backends. Newly saved custom settings, including local development URLs, remain unchanged.
 
-On demand, `/api/explain` sends request evidence to Orbio. The model can call tools to retrieve verified ABI/source from Sourcify, inspect reported proxy implementations and decode nested bytes. Results explain the action, its effect and what to check; supporting sources are available in the review. Deterministic findings are kept separate from model interpretation.
+On demand, `/api/explain` sends request evidence to the configured provider (currently Orbio). The model can call tools to retrieve verified ABI/source from Sourcify, inspect reported proxy implementations and decode nested bytes. Results explain the action, its effect and what to check; supporting sources are available in the review. Deterministic findings are kept separate from model interpretation.
 
 Real Orbio-backed Chinese and English explanations and contract-tool calls were verified on September 17, 2026. See [VALIDATION.md](VALIDATION.md) for evidence and limits. Runtime provider labels reflect the configured endpoint.
 
@@ -103,6 +113,7 @@ For an isolated browser replay, run `node scripts/qa-extension.mjs` after buildi
 | `lib/inspector/` | Decoders, explorer links, language handling and AI investigation |
 | `components/inspector/` | Product homepage and shared review components |
 | `app/api/explain/` | Optional server-side AI endpoint |
+| `app/api/arc/` | Public, read-only Arc mainnet transaction reader |
 | `tests/inspector/` | Decoder, wallet-hook and request-pipeline regressions |
 | `lib/txlens/`, `tests/txlens/` | Retained deterministic tools and tests from the earlier Orbio prototype |
 

@@ -1,4 +1,7 @@
-TxLens v0.2.7 — Free / 免费
+TxLens v0.3.0 — Free / 免费
+
+Arc mainnet: review USDC transfers and spending approvals before wallet confirmation.
+Arc 主网：在钱包确认前审阅 USDC 转账与使用授权。
 
 Chrome / Edge: open Extensions → Developer mode → Load unpacked → select this folder.
 Chrome / Edge：扩展程序管理 → 开发者模式 → 加载已解压的扩展程序 → 选择此文件夹。

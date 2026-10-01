@@ -244,7 +244,7 @@ function App() {
               )}
             </div>
             <span className="eyebrow">
-              {t("钱包请求助手", "YOUR WALLET COMPANION")}
+              {t("Arc 与 EVM 钱包请求助手", "ARC & EVM WALLET COMPANION")}
             </span>
             <h1>
               {isPaused(settings, origin)
@@ -312,8 +312,8 @@ function App() {
             </strong>
             <p>
               {t(
-                "先核对金额和授权范围，再按需查看操作说明。",
-                "Check amounts and spending permissions, then ask for an explanation if needed.",
+                "支持 Arc USDC 转账与授权，区分转账金额和使用权限。需要时再查看 AI 说明。",
+                "Review Arc USDC transfers and approvals, with amounts and spending permissions shown separately. Ask AI when needed.",
               )}
             </p>
           </div>

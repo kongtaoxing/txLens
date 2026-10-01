@@ -39,6 +39,8 @@ export type Inspection = {
   kind: "transaction" | "signature";
 };
 const chains: Record<string, string> = {
+  "5042": "Arc",
+  "5042002": "Arc Testnet",
   "1": "Ethereum",
   "8453": "Base",
   "42161": "Arbitrum",
@@ -46,6 +48,8 @@ const chains: Record<string, string> = {
   "137": "Polygon",
 };
 const tokens: Record<string, Record<string, [string, number]>> = {
+  "5042": { "0x3600000000000000000000000000000000000000": ["USDC", 6] },
+  "5042002": { "0x3600000000000000000000000000000000000000": ["USDC", 6] },
   "1": {
     "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48": ["USDC", 6],
     "0xdac17f958d2ee523a2206206994597c13d831ec7": ["USDT", 6],
@@ -221,7 +225,7 @@ export function inspect(
       fact(
         "随请求发送",
         "Value sent",
-        `${formatUnits(native, 18)} ${chain === "137" ? "POL" : ["1", "8453", "42161", "4663"].includes(chain) ? "ETH" : t("原生币（精度未验证）", "native token (decimals unverified)")}`,
+        `${formatUnits(native, 18)} ${["5042", "5042002"].includes(chain) ? "USDC" : chain === "137" ? "POL" : ["1", "8453", "42161", "4663"].includes(chain) ? "ETH" : t("原生币（精度未验证）", "native token (decimals unverified)")}`,
       );
     const data = String(tx.data || tx.input || "0x");
     if (data === "0x") {
